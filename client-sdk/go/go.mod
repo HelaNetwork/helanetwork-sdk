@@ -11,26 +11,35 @@ replace (
 )
 
 require (
-	github.com/btcsuite/btcd v0.22.1
+	github.com/btcsuite/btcd v0.24.2
 	github.com/ethereum/go-ethereum v1.10.19
 	github.com/golang/snappy v0.0.4
 	github.com/oasisprotocol/curve25519-voi v0.0.0-20220708102147-0a8a51822cae
 	github.com/oasisprotocol/deoxysii v0.0.0-20220228165953-2091330c22b7
 	github.com/oasisprotocol/oasis-core/go v0.2202.5
 	github.com/shopspring/decimal v1.3.1
-	github.com/stretchr/testify v1.8.0
+	github.com/stretchr/testify v1.8.4
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa
 	google.golang.org/grpc v1.49.0
 )
 
 require (
+	github.com/aead/siphash v1.0.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/btcsuite/btcd/btcec/v2 v2.2.0 // indirect
+	github.com/btcsuite/btcd/btcutil v1.1.5 // indirect
+	github.com/btcsuite/btcd/chaincfg/chainhash v1.1.0 // indirect
+	github.com/btcsuite/btclog v0.0.0-20170628155309-84c8d2346e9f // indirect
 	github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce // indirect
+	github.com/btcsuite/go-socks v0.0.0-20170105172521-4720035b7bfd // indirect
+	github.com/btcsuite/websocket v0.0.0-20150119174127-31079b680792 // indirect
+	github.com/btcsuite/winsvc v1.0.0 // indirect
 	github.com/cenkalti/backoff/v4 v4.1.3 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/decred/dcrd/crypto/blake256 v1.0.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 // indirect
+	github.com/decred/dcrd/lru v1.0.0 // indirect
 	github.com/eapache/channels v1.1.0 // indirect
 	github.com/eapache/queue v1.1.0 // indirect
 	github.com/fatih/color v1.13.0 // indirect
@@ -47,6 +56,9 @@ require (
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/ipfs/go-cid v0.3.2 // indirect
 	github.com/ipfs/go-log/v2 v2.5.1 // indirect
+	github.com/jessevdk/go-flags v1.4.0 // indirect
+	github.com/jrick/logrotate v1.0.0 // indirect
+	github.com/kkdai/bstream v0.0.0-20161212061736-f391b8402d23 // indirect
 	github.com/klauspost/cpuid/v2 v2.1.1 // indirect
 	github.com/libp2p/go-buffer-pool v0.1.0 // indirect
 	github.com/libp2p/go-libp2p v0.23.2 // indirect
@@ -83,7 +95,9 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.13.0 // indirect
+	github.com/stretchr/objx v0.5.0 // indirect
 	github.com/subosito/gotenv v1.4.1 // indirect
+	github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7 // indirect
 	github.com/tendermint/tendermint v0.34.21 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
