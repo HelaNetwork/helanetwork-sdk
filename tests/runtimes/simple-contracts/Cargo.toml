@@ -1,0 +1,14 @@
+[package]
+name = "test-runtime-simple-contracts"
+version = "0.1.0"
+authors = ["Oasis Protocol Foundation <info@oasisprotocol.org>"]
+edition = "2021"
+license = "Apache-2.0"
+
+[dependencies]
+cbor = { version = "0.5.1", package = "oasis-cbor" }
+oasis-runtime-sdk = { path = "../../../runtime-sdk" }
+oasis-runtime-sdk-contracts = { path = "../../../runtime-sdk/modules/contracts" }
+
+# Third party.
+thiserror = "1.0"
