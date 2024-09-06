@@ -9,8 +9,8 @@ license = "Apache-2.0"
 cbor = { version = "0.5.1", package = "oasis-cbor" }
 #oasis-core-runtime = { git = "https://github.com/oasisprotocol/oasis-core", tag = "v22.2.5" }
 #oasis-core-keymanager = { git = "https://github.com/oasisprotocol/oasis-core", tag = "v22.2.5" }
-oasis-core-runtime = { path = "../../oasis-core/runtime" }
-oasis-core-keymanager = { path = "../../oasis-core/keymanager" }
+oasis-core-runtime = { path = "../../helanetwork-core/runtime" }
+oasis-core-keymanager = { path = "../../helanetwork-core/keymanager" }
 oasis-runtime-sdk-macros = { path = "../runtime-sdk-macros", optional = true }
 
 # Third party.
