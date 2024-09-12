@@ -78,7 +78,7 @@ fn decode_enveloped(
         eth_nonce,
         eth_gas_price,
         eth_gas_limit,
-    ) = match rlp::decode::<ethereum::TransactionV2>(body)
+    ) = match ethereum::TransactionV2::decode::<ethereum::TransactionV2>(body)
         .with_context(|| "decoding transaction rlp")?
     {
         ethereum::TransactionV2::Legacy(eth_tx) => {
