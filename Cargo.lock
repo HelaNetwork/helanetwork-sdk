@@ -2330,7 +2330,7 @@ dependencies = [
  "rand_core 0.6.4",
  "rayon",
  "schnorrkel",
- "sha2 0.9.9",
+ "sha2 0.10.8",
  "sha3 0.10.6",
  "sha3 0.9.1",
  "slog",

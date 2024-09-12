@@ -184,11 +184,12 @@ impl PublicKey {
                 SignatureType::Ed25519_Pure => pk.verify_raw(message, signature),
                 SignatureType::Ed25519_PrehashedSha512 => {
                     if context_or_hash.len()
-                        != <Sha512 as sha2::digest::FixedOutput>::OutputSize::USIZE
+                        != <sha2::Sha512 as sha2::digest::OutputSizeUser>::OutputSize::USIZE
                     {
                         return Err(Error::InvalidArgument);
                     }
-                    let digest = digests::DummyDigest::<Sha512>::new_precomputed(context_or_hash);
+                    let digest =
+                        digests::DummyDigest::<sha2::Sha512>::new_precomputed(context_or_hash);
                     pk.verify_digest(digest, signature)
                 }
                 _ => Err(Error::InvalidArgument),
@@ -372,11 +373,12 @@ impl MemorySigner {
                 SignatureType::Ed25519_Pure => signer.sign_raw(message),
                 SignatureType::Ed25519_PrehashedSha512 => {
                     if context_or_hash.len()
-                        != <Sha512 as sha2::digest::FixedOutput>::OutputSize::USIZE
+                        != <sha2::Sha512 as sha2::digest::OutputSizeUser>::OutputSize::USIZE
                     {
                         return Err(Error::InvalidArgument);
                     }
-                    let digest = digests::DummyDigest::<Sha512>::new_precomputed(context_or_hash);
+                    let digest =
+                        digests::DummyDigest::<sha2::Sha512>::new_precomputed(context_or_hash);
                     signer.sign_digest(digest)
                 }
                 _ => Err(Error::InvalidArgument),
