@@ -32,7 +32,7 @@ lru = "0.8.0"
 
 # Ethereum.
 ethabi = { version = "17.0.0", default-features = false, features = ["std"]}
-ethereum = "0.12"
+ethereum = "0.14"
 evm = "0.35.0"
 fixed-hash = "0.7.0"
 primitive-types = { version = "0.11", default-features = false, features = ["rlp", "num-traits"] }
