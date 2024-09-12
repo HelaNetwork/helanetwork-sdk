@@ -92,7 +92,7 @@ pub(super) fn call_ecrecover(
         });
     }
 
-    let output = match k256::ecdsa::VerifyingKey::recover_from_prehash(&prehash, &sig, recid) {
+    let output = match k256::ecdsa::VerifyingKey::recover_from_prehash(&msg, &sig, recid) {
         Ok(recovered_key) => {
             // Convert Ethereum style address
             let p = recovered_key.to_encoded_point(false);

@@ -57,10 +57,10 @@ pub fn recover_low(
 
     // Cache the recovered key
     {
-        KEY_CACHE.lock().put(sig.to_vec(), verifying_key.clone());
+        KEY_CACHE.lock().put(sig.to_vec(), verifying_key?.clone());
     }
 
-    Ok(verifying_key)
+    Ok(verifying_key?)
 }
 
 pub fn decode(
@@ -163,8 +163,8 @@ pub fn decode(
         ethereum::TransactionAction::Call(eth_address) => (
             "evm.Call",
             cbor::to_value(types::Call {
-                address: eth_address.into(),
-                value: eth_value.into(),
+                address: eth_address,
+                value: eth_value,
                 data: eth_input,
             }),
         ),
@@ -176,7 +176,7 @@ pub fn decode(
             }),
         ),
     };
-    let key = recover_low(&sig, sig_recid, &sig_hash)?;
+    let key = recover_low(&sig, sig_recid, sig_hash)?;
     let nonce: u64 = eth_nonce
         .try_into()
         .map_err(|e| anyhow!("converting nonce: {}", e))?;
