@@ -2,7 +2,7 @@
 use std::convert::TryFrom;
 
 use digest::typenum::Unsigned as _;
-use sha2::{Digest as _, Sha512, Sha512Trunc256};
+use sha2::{Digest as _, Sha512, Sha512_256};
 use thiserror::Error;
 
 pub mod context;
@@ -207,7 +207,7 @@ impl PublicKey {
                 }
                 SignatureType::Secp256k1_PrehashedSha256 => {
                     if context_or_hash.len()
-                        != <sha2::Sha256 as sha2::digest::FixedOutput>::OutputSize::USIZE
+                        != <sha2::Sha256 as sha2::digest::OutputSizeUser>::OutputSize::USIZE
                     {
                         return Err(Error::InvalidArgument);
                     }
@@ -311,7 +311,7 @@ impl MemorySigner {
 
     /// Create a new signer for testing purposes.
     pub fn new_test(sig_type: SignatureType, name: &str) -> Self {
-        let mut digest = Sha512Trunc256::new();
+        let mut digest = Sha512_256::new();
         digest.update(name.as_bytes());
         let seed = digest.finalize();
         Self::new_from_seed(sig_type, &seed).unwrap()
@@ -396,7 +396,7 @@ impl MemorySigner {
                 }
                 SignatureType::Secp256k1_PrehashedSha256 => {
                     if context_or_hash.len()
-                        != <sha2::Sha256 as sha2::digest::FixedOutput>::OutputSize::USIZE
+                        != <sha2::Sha256 as sha2::digest::OutputSizeUser>::OutputSize::USIZE
                     {
                         return Err(Error::InvalidArgument);
                     }
