@@ -8,7 +8,7 @@ use k256::{
     },
     elliptic_curve::sec1::{FromEncodedPoint, ToEncodedPoint},
 };
-use sha2::Sha512Trunc256;
+use sha2::{Digest, Sha512_256};
 
 use crate::crypto::signature::{Error, Signature};
 
@@ -79,7 +79,7 @@ impl PublicKey {
         // even though it's the same thing, because it implements the Digest
         // trait, so we can use verify_digest() below, which doesn't pre-hash
         // the data (verify() does).
-        let mut digest = Sha512Trunc256::new();
+        let mut digest = Sha512_256::new();
         for byte in &[context, message] {
             <Sha512Trunc256 as Digest>::update(&mut digest, byte);
         }
