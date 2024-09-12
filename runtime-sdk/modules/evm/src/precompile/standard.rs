@@ -8,10 +8,7 @@ use evm::{
     executor::stack::{PrecompileFailure, PrecompileOutput},
     Context, ExitError, ExitSucceed,
 };
-use k256::{
-    ecdsa::recoverable,
-    elliptic_curve::{sec1::ToEncodedPoint, IsHigh},
-};
+
 use num::{BigUint, FromPrimitive, One, ToPrimitive, Zero};
 use ripemd160::Ripemd160;
 use sha2::Sha256;
@@ -61,7 +58,19 @@ pub(super) fn call_ecrecover(
         });
     }
 
-    let dsa_sig = match recoverable::Signature::try_from(&sig[..]) {
+    let recid = match k256::ecdsa::RecoveryId::from_byte(sig[64]) {
+        Some(recid) if !recid.is_x_reduced() => recid,
+        _ => {
+            return Ok(PrecompileOutput {
+                exit_status: ExitSucceed::Returned,
+                cost: gas_cost,
+                output: vec![],
+                logs: Default::default(),
+            })
+        }
+    };
+
+    let sig = match k256::ecdsa::Signature::try_from(&sig[..64]) {
         Ok(s) => s,
         Err(_) => {
             return Ok(PrecompileOutput {
@@ -69,12 +78,12 @@ pub(super) fn call_ecrecover(
                 cost: gas_cost,
                 output: vec![],
                 logs: Default::default(),
-            });
+            })
         }
     };
 
     // Reject high s to make consistent with our Ethereum transaction signature verification.
-    if dsa_sig.s().is_high().into() {
+    if  sig.s().is_high().into() {
         return Ok(PrecompileOutput {
             exit_status: ExitSucceed::Returned,
             cost: gas_cost,
@@ -83,7 +92,7 @@ pub(super) fn call_ecrecover(
         });
     }
 
-    let result = match dsa_sig.recover_verify_key_from_digest_bytes(&msg.into()) {
+    let output = match k256::ecdsa::VerifyingKey::recover_from_prehash(&prehash, &sig, recid) {
         Ok(recovered_key) => {
             // Convert Ethereum style address
             let p = recovered_key.to_encoded_point(false);
@@ -99,7 +108,7 @@ pub(super) fn call_ecrecover(
     Ok(PrecompileOutput {
         exit_status: ExitSucceed::Returned,
         cost: gas_cost,
-        output: result.to_vec(),
+        output,
         logs: Default::default(),
     })
 }
