@@ -2313,7 +2313,7 @@ dependencies = [
  "digest 0.10.7",
  "ed25519-dalek",
  "hex",
- "hmac 0.11.0",
+ "hmac 0.12.1",
  "impl-trait-for-tuples",
  "io-context",
  "k256",
