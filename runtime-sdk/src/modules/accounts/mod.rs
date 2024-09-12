@@ -607,7 +607,7 @@ impl API for Module {
         let store = storage::PrefixStore::new(state, &MODULE_NAME);
         let mut accounts =
             storage::TypedStore::new(storage::PrefixStore::new(store, &state::ACCOUNTS));
-        let mut account: types::Account = accounts.get(&address).unwrap_or_default();
+        let mut account: types::Account = accounts.get(address).unwrap_or_default();
         account.nonce = nonce;
         accounts.insert(&address, account);
     }
@@ -615,7 +615,7 @@ impl API for Module {
     fn get_nonce<S: storage::Store>(state: S, address: Address) -> Result<u64, Error> {
         let store = storage::PrefixStore::new(state, &MODULE_NAME);
         let accounts = storage::TypedStore::new(storage::PrefixStore::new(store, &state::ACCOUNTS));
-        let account: types::Account = accounts.get(&address).unwrap_or_default();
+        let account: types::Account = accounts.get(address).unwrap_or_default();
         Ok(account.nonce)
     }
 
@@ -743,7 +743,7 @@ impl API for Module {
         let store = storage::PrefixStore::new(state, &MODULE_NAME);
         let mut accounts =
             storage::TypedStore::new(storage::PrefixStore::new(store, &state::ACCOUNTS));
-        let mut account: types::Account = accounts.get(&address).unwrap_or_default();
+        let mut account: types::Account = accounts.get(address).unwrap_or_default();
         account.role = role;
         accounts.insert(&address, account);
     }
@@ -849,7 +849,7 @@ impl API for Module {
     fn get_role<S: storage::Store>(state: S, address: Address) -> Result<role::Role, Error> {
         let store = storage::PrefixStore::new(state, &MODULE_NAME);
         let accounts = storage::TypedStore::new(storage::PrefixStore::new(store, &state::ACCOUNTS));
-        let account: types::Account = accounts.get(&address).unwrap_or_default();
+        let account: types::Account = accounts.get(address).unwrap_or_default();
         Ok(account.role)
     }
 
@@ -857,7 +857,7 @@ impl API for Module {
         let store = storage::PrefixStore::new(state, &MODULE_NAME);
         let mut accounts =
             storage::TypedStore::new(storage::PrefixStore::new(store, &state::ACCOUNTS));
-        let mut account: types::Account = accounts.get(&address).unwrap_or_default();
+        let mut account: types::Account = accounts.get(address).unwrap_or_default();
         account.init = init;
         accounts.insert(&address, account);
     }
@@ -865,7 +865,7 @@ impl API for Module {
     fn get_initstatus<S: storage::Store>(state: S, address: Address) -> Result<bool, Error> {
         let store = storage::PrefixStore::new(state, &MODULE_NAME);
         let accounts = storage::TypedStore::new(storage::PrefixStore::new(store, &state::ACCOUNTS));
-        let account: types::Account = accounts.get(&address).unwrap_or_default();
+        let account: types::Account = accounts.get(address).unwrap_or_default();
         Ok(account.init)
     }
 
@@ -1003,7 +1003,7 @@ impl API for Module {
         let mut sender = None;
         for si in auth_info.signer_info.iter() {
             let address = si.address_spec.address();
-            let account: types::Account = accounts.get(&address).unwrap_or_default();
+            let account: types::Account = accounts.get(address).unwrap_or_default();
 
             // First signer pays for the fees and is considered the sender.
             if sender.is_none() {
@@ -1068,7 +1068,7 @@ impl API for Module {
             storage::TypedStore::new(storage::PrefixStore::new(&mut store, &state::ACCOUNTS));
         for si in auth_info.signer_info.iter() {
             let address = si.address_spec.address();
-            let mut account: types::Account = accounts.get(&address).unwrap_or_default();
+            let mut account: types::Account = accounts.get(address).unwrap_or_default();
 
             // Update nonce.
             account.nonce = account
@@ -1767,18 +1767,13 @@ impl Module {
                 .expect("unexpected total supply");
             assert!(
                 &computed == total_supply,
-                "unexpected total supply (expected: {} got: {})",
-                total_supply,
-                computed
+               "unexpected total supply (expected: {total_supply} got: {computed})",
             );
 
             total_supplies.insert(denomination, total_supply);
         }
         for (denomination, total_supply) in computed_total_supply.iter() {
-            panic!(
-                "missing expected total supply: {} {}",
-                total_supply, denomination
-            );
+            panic!("missing expected total supply: {total_supply} {denomination}",);
         }
 
         // Validate genesis parameters.
@@ -2051,8 +2046,7 @@ impl module::InvariantHandler for Module {
             if &computed != ts {
                 // Computed and actual total supplies don't match.
                 return Err(CoreError::InvariantViolation(format!(
-                    "computed and actual total supplies don't match (computed={}, actual={})",
-                    computed, ts
+                    "computed and actual total supplies don't match (computed={computed}, actual={ts})",
                 )));
             }
         }
