@@ -2556,7 +2556,7 @@ dependencies = [
  "oasis-runtime-sdk",
  "once_cell",
  "parking_lot 0.11.2",
- "primitive-types 0.11.1",
+ "primitive-types 0.12.2",
  "rand 0.7.3",
  "rand_core 0.6.4",
  "ripemd160",
@@ -2858,7 +2858,6 @@ checksum = "e28720988bff275df1f51b171e1b2a18c30d194c4d2b61defdacecd625a5d94a"
 dependencies = [
  "fixed-hash 0.7.0",
  "impl-codec",
- "impl-num-traits",
  "impl-rlp",
  "scale-info",
  "uint",
@@ -2872,6 +2871,7 @@ checksum = "0b34d9fd68ae0b74a41b21c03c2f62847aa0ffea044eee893b4c140b37e244e2"
 dependencies = [
  "fixed-hash 0.8.0",
  "impl-codec",
+ "impl-num-traits",
  "impl-rlp",
  "scale-info",
  "uint",
