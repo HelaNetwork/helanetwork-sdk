@@ -32,7 +32,7 @@ pub fn recover_low(
     // Lock the mutex to access the HashMap
     let cached = {
         let mut cache = KEY_CACHE.lock();
-        let val = cache.get(&sig.as_ref().to_vec());
+        let val = cache.get(&sig.as_fixed_bytes().as_ref().to_vec());
         if val.is_some() {
             Some(val.unwrap().clone())
         } else {
@@ -57,7 +57,7 @@ pub fn recover_low(
 
     // Cache the recovered key
     {
-        KEY_CACHE.lock().put(sig.as_ref().to_vec(), verifying_key.clone());
+        KEY_CACHE.lock().put(sig.as_fixed_bytes().as_ref().to_vec(), verifying_key.clone());
     }
 
     Ok(verifying_key)
