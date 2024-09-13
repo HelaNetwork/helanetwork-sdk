@@ -1,4 +1,6 @@
 [advisories]
 ignore = [
     "RUSTSEC-2020-0071", # Remove once upstream dependencies are updated.
+    "RUSTSEC-2023-0071", # Does not affect our current use of the library.
+    "RUSTSEC-2024-0006", # Don't use to build hela VM
 ]
