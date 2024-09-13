@@ -1,10 +1,10 @@
-use digest::{consts::U32, Digest, FixedOutput};
 //! Secp256k1 signatures.
+use digest::{consts::U32, Digest, FixedOutput};
+
 use k256::{
     self,
     ecdsa::{
         self,
-        digest::{consts::U32, BlockInput, Digest, FixedOutput, Reset, Update},
         signature::{DigestSigner as _, DigestVerifier, Signer as _, Verifier as _},
     },
     elliptic_curve::sec1::{FromEncodedPoint, ToEncodedPoint},

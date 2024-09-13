@@ -48,13 +48,6 @@ where
     }
 }
 
-impl<D> digest::BlockInput for DummyDigest<D>
-where
-    D: digest::BlockInput,
-{
-    type BlockSize = <D as digest::BlockInput>::BlockSize;
-}
-
 impl<D> digest::OutputSizeUser for DummyDigest<D>
 where
     D: digest::OutputSizeUser,

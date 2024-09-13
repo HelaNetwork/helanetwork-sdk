@@ -310,7 +310,7 @@ impl MemorySigner {
 
     /// Create a new signer for testing purposes.
     pub fn new_test(sig_type: SignatureType, name: &str) -> Self {
-        let mut digest = Sha512Trunc256::new();
+        let mut digest = Sha512_256::new();
         digest.update(name.as_bytes());
         let seed = digest.finalize();
         Self::new_from_seed(sig_type, &seed).unwrap()
