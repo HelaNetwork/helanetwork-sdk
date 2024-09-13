@@ -34,7 +34,7 @@ impl PublicKey {
         // Note: This could do the small order public key check,
         // but just assume that signature verification will impose
         // whatever semantics it desires.
-        let a = CompressedEdwardsY::from_slice(bytes);
+        let a = CompressedEdwardsY::from_slice(bytes).unwrap(); // Length is checked above.
         let _a = match a.decompress() {
             Some(point) => point,
             None => return Err(Error::MalformedPublicKey),
