@@ -8,16 +8,13 @@ use evm::{
     executor::stack::{PrecompileFailure, PrecompileHandle, PrecompileOutput},
     ExitError, ExitSucceed,
 };
-use k256::{
-    ecdsa::recoverable,
-    elliptic_curve::{sec1::ToEncodedPoint, IsHigh},
-};
+use k256::elliptic_curve::scalar::IsHigh;
 use num::{BigUint, FromPrimitive, One, ToPrimitive, Zero};
 use ripemd160::{Digest as _, Ripemd160};
 use sha2::Sha256;
 use sha3::{Digest as _, Keccak256};
 
-use super::{record_linear_cost, PrecompileResult};
+use super::{read_input, record_linear_cost, PrecompileResult};
 
 /// Minimum gas cost of ModExp contract from eip-2565
 /// https://eips.ethereum.org/EIPS/eip-2565
@@ -28,15 +25,15 @@ pub(super) fn call_ecrecover(handle: &mut impl PrecompileHandle) -> PrecompileRe
 
     // Make right padding for input.
     let input = handle.input();
-    let mut padding = [0u8; 128];
-    padding[..min(input.len(), 128)].copy_from_slice(&input[..min(input.len(), 128)]);
 
-    let mut msg = [0u8; 32];
-    let mut sig = [0u8; 65];
+     // Input encoded as [hash, r, s, v].
+     let mut prehash = [0u8; 32];
+     let mut padding = [0u8; 32];
+     let mut sig = [0u8; 65];
 
-    // input encoded as [hash, v, r, s]
-    msg.copy_from_slice(&padding[0..32]);
-    sig[0..64].copy_from_slice(&padding[64..]);
+    read_input(input, &mut prehash, 0);
+    read_input(input, &mut padding, 32);
+    read_input(input, &mut sig[..64], 64);
 
     // Check EIP-155
     if padding[63] > 26 {
@@ -45,33 +42,43 @@ pub(super) fn call_ecrecover(handle: &mut impl PrecompileHandle) -> PrecompileRe
         sig[64] = padding[63];
     }
 
-    // Ensure bytes 32..63 are all zero.
-    if padding[32..63] != [0; 31] {
+    // Ensure input bytes 32..63 are all zero.
+    if padding[..31] != [0; 31] {
         return Ok(PrecompileOutput {
             exit_status: ExitSucceed::Returned,
             output: vec![],
         });
     }
 
-    let dsa_sig = match recoverable::Signature::try_from(&sig[..]) {
+    let recid = match k256::ecdsa::RecoveryId::from_byte(sig[64]) {
+        Some(recid) if !recid.is_x_reduced() => recid,
+        _ => {
+            return Ok(PrecompileOutput {
+                exit_status: ExitSucceed::Returned,
+                output: vec![],
+            })
+        }
+    };
+
+    let sig = match k256::ecdsa::Signature::try_from(&sig[..64]) {
         Ok(s) => s,
         Err(_) => {
             return Ok(PrecompileOutput {
                 exit_status: ExitSucceed::Returned,
                 output: vec![],
-            });
+            })
         }
     };
 
     // Reject high s to make consistent with our Ethereum transaction signature verification.
-    if dsa_sig.s().is_high().into() {
+    if sig.s().is_high().into() {
         return Ok(PrecompileOutput {
             exit_status: ExitSucceed::Returned,
             output: vec![],
         });
     }
 
-    let result = match dsa_sig.recover_verify_key_from_digest_bytes(&msg.into()) {
+    let output = match k256::ecdsa::VerifyingKey::recover_from_prehash(&prehash, &sig, recid) {
         Ok(recovered_key) => {
             // Convert Ethereum style address
             let p = recovered_key.to_encoded_point(false);
@@ -86,7 +93,7 @@ pub(super) fn call_ecrecover(handle: &mut impl PrecompileHandle) -> PrecompileRe
 
     Ok(PrecompileOutput {
         exit_status: ExitSucceed::Returned,
-        output: result.to_vec(),
+        output,
     })
 }
 

@@ -201,7 +201,7 @@ impl PublicKey {
                     }
                     // Use SHA-256 for RFC6979 even if Keccak256 was used for the message.
                     let digest =
-                        digests::DummyDigest::<sha2::Sha256>::new_precomputed(context_or_hash);
+                        digests::DummyDigest::<k256::sha2::Sha256>::new_precomputed(context_or_hash);
                     pk.verify_digest(digest, signature)
                 }
                 SignatureType::Secp256k1_PrehashedSha256 => {
@@ -211,7 +211,7 @@ impl PublicKey {
                         return Err(Error::InvalidArgument);
                     }
                     let digest =
-                        digests::DummyDigest::<sha2::Sha256>::new_precomputed(context_or_hash);
+                        digests::DummyDigest::<k256::sha2::Sha256>::new_precomputed(context_or_hash);
                     pk.verify_digest(digest, signature)
                 }
                 _ => Err(Error::InvalidArgument),
@@ -389,7 +389,7 @@ impl MemorySigner {
                     }
                     // Use SHA-256 for RFC6979 even if Keccak256 was used for the message.
                     let digest =
-                        digests::DummyDigest::<sha2::Sha256>::new_precomputed(context_or_hash);
+                        digests::DummyDigest::<k256::sha2::Sha256>::new_precomputed(context_or_hash);
                     signer.sign_digest(digest)
                 }
                 SignatureType::Secp256k1_PrehashedSha256 => {
@@ -399,7 +399,7 @@ impl MemorySigner {
                         return Err(Error::InvalidArgument);
                     }
                     let digest =
-                        digests::DummyDigest::<sha2::Sha256>::new_precomputed(context_or_hash);
+                        digests::DummyDigest::<k256::sha2::Sha256>::new_precomputed(context_or_hash);
                     signer.sign_digest(digest)
                 }
                 _ => Err(Error::InvalidArgument),

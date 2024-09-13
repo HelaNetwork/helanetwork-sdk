@@ -1,4 +1,3 @@
-use k256::ecdsa::digest as ecdsa_digest;
 
 /// A digest that either passes through calls to an actual digest or returns
 /// pre-existing hash bytes..
@@ -49,37 +48,11 @@ where
     }
 }
 
-impl<D> ecdsa_digest::BlockInput for DummyDigest<D>
+impl<D> digest::BlockInput for DummyDigest<D>
 where
-    D: ecdsa_digest::BlockInput,
+    D: digest::BlockInput,
 {
-    type BlockSize = <D as ecdsa_digest::BlockInput>::BlockSize;
-}
-
-impl<D> ecdsa_digest::FixedOutput for DummyDigest<D>
-where
-    D: ecdsa_digest::FixedOutput,
-{
-    type OutputSize = <D as ecdsa_digest::FixedOutput>::OutputSize;
-
-    fn finalize_into(self, out: &mut digest::generic_array::GenericArray<u8, Self::OutputSize>) {
-        if let Some(digest) = self.underlying {
-            digest.finalize_into(out);
-        } else {
-            out.as_mut_slice().copy_from_slice(&self.preexisting);
-        }
-    }
-
-    fn finalize_into_reset(
-        &mut self,
-        out: &mut digest::generic_array::GenericArray<u8, Self::OutputSize>,
-    ) {
-        if let Some(ref mut digest) = self.underlying {
-            digest.finalize_into_reset(out);
-        } else {
-            out.as_mut_slice().copy_from_slice(&self.preexisting);
-        }
-    }
+    type BlockSize = <D as digest::BlockInput>::BlockSize;
 }
 
 impl<D> digest::OutputSizeUser for DummyDigest<D>
@@ -89,9 +62,22 @@ where
     type OutputSize = <D as digest::OutputSizeUser>::OutputSize;
 }
 
-impl<D> ecdsa_digest::Reset for DummyDigest<D>
+impl<D> digest::FixedOutput for DummyDigest<D>
 where
-    D: ecdsa_digest::Reset,
+    D: digest::FixedOutput,
+{
+    fn finalize_into(self, out: &mut digest::Output<Self>) {
+        if let Some(digest) = self.underlying {
+            digest.finalize_into(out);
+        } else {
+            out.as_mut_slice().copy_from_slice(&self.preexisting);
+        }
+    }
+}
+
+impl<D> digest::Reset for DummyDigest<D>
+where
+    D: digest::Reset,
 {
     fn reset(&mut self) {
         if let Some(ref mut digest) = self.underlying {
@@ -102,9 +88,9 @@ where
     }
 }
 
-impl<D> ecdsa_digest::Update for DummyDigest<D>
+impl<D> digest::Update for DummyDigest<D>
 where
-    D: ecdsa_digest::Update,
+    D: digest::Update,
 {
     fn update(&mut self, data: impl AsRef<[u8]>) {
         if let Some(ref mut digest) = self.underlying {
@@ -114,3 +100,5 @@ where
         }
     }
 }
+
+impl<D> digest::HashMarker for DummyDigest<D> where D: digest::HashMarker {}
