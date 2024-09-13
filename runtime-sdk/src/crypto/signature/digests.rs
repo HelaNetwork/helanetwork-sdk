@@ -82,6 +82,13 @@ where
     }
 }
 
+impl<D> digest::OutputSizeUser for DummyDigest<D>
+where
+    D: digest::OutputSizeUser,
+{
+    type OutputSize = <D as digest::OutputSizeUser>::OutputSize;
+}
+
 impl<D> ecdsa_digest::Reset for DummyDigest<D>
 where
     D: ecdsa_digest::Reset,
