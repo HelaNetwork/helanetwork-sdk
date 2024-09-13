@@ -122,7 +122,7 @@ pub(super) fn call_datacopy(handle: &mut impl PrecompileHandle) -> PrecompileRes
 
     Ok(PrecompileOutput {
         exit_status: ExitSucceed::Returned,
-        output: input.to_vec(),
+        output: handle.input().to_vec(),
     })
 }
 
