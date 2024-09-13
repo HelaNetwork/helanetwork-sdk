@@ -1,6 +1,7 @@
 //! EVM precompiles.
 
 use std::marker::PhantomData;
+use std::cmp::min;
 
 use evm::{
     executor::stack::{PrecompileFailure, PrecompileHandle, PrecompileOutput, PrecompileSet},
