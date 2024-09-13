@@ -13,7 +13,7 @@ struct TestConfig;
 
 impl crate::Config for TestConfig {
     type Accounts = Module;
-    // type AdditionalPrecompileSet = ();
+    type AdditionalPrecompileSet = ();
     const CHAIN_ID: u64 = 0;
 
     const TOKEN_DENOMINATION: Denomination = Denomination::NATIVE;
