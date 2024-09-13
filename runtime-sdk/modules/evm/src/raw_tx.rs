@@ -32,7 +32,7 @@ pub fn recover_low(
     // Lock the mutex to access the HashMap
     let cached = {
         let mut cache = KEY_CACHE.lock();
-        let val = cache.get(&sig.as_ref().to_vec());
+        let val = cache.get(&sig.to_vec());
         if val.is_some() {
             Some(val.unwrap().clone())
         } else {
@@ -55,7 +55,7 @@ pub fn recover_low(
 
     // Cache the recovered key
     {
-        KEY_CACHE.lock().put(sig.as_ref().to_vec(), verifying_key.clone());
+        KEY_CACHE.lock().put(sig.to_vec(), verifying_key.clone());
     }
 
     Ok(verifying_key)
@@ -108,8 +108,8 @@ pub fn decode(
                 eth_tx.s.to_fixed_bytes(),
             )
             .with_context(|| "signature from_scalars")?;
-            let message = ethereum::EIP2930TransactionMessage::from(eth_tx);
             let sig_recid = k256::ecdsa::RecoveryId::new(eth_tx.odd_y_parity, false);
+            let message = ethereum::EIP2930TransactionMessage::from(eth_tx);
             (
                 Some(message.chain_id),
                 sig,

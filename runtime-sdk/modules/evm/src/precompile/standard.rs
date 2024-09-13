@@ -36,10 +36,10 @@ pub(super) fn call_ecrecover(handle: &mut impl PrecompileHandle) -> PrecompileRe
     read_input(input, &mut sig[..64], 64);
 
     // Check EIP-155
-    if padding[63] > 26 {
-        sig[64] = padding[63] - 27;
+    if padding[31] > 26 {
+        sig[64] = padding[31] - 27;
     } else {
-        sig[64] = padding[63];
+        sig[64] = padding[31];
     }
 
     // Ensure input bytes 32..63 are all zero.
