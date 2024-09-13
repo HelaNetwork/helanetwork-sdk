@@ -85,7 +85,7 @@ impl<D> digest::Update for DummyDigest<D>
 where
     D: digest::Update,
 {
-    fn update(&mut self, data: impl AsRef<[u8]>) {
+    fn update(&mut self, data: &[u8]) {
         if let Some(ref mut digest) = self.underlying {
             digest.update(data);
         } else {
