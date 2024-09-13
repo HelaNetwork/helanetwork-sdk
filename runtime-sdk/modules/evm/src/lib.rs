@@ -53,15 +53,8 @@ use oasis_runtime_sdk::{
     },
 };
 
-/// AdditionalPrecompileSet is the type used for the additional precompiles.
-    /// Use `()` if unused.
-type AdditionalPrecompileSet: evm::executor::stack::PrecompileSet;
-
 use backend::ApplyBackendResult;
 use types::{H160, H256, U256};
-/// AdditionalPrecompileSet is the type used for the additional precompiles.
-/// Use `()` if unused.
-type AdditionalPrecompileSet: evm::executor::stack::PrecompileSet;
 
 fn slice_to_array_32<T>(slice: &[T]) -> &[T; 32] {
     let ptr = slice.as_ptr() as *const [T; 32];
@@ -101,6 +94,9 @@ const MODULE_NAME: &str = "evm";
 
 /// Module configuration.
 pub trait Config: 'static {
+    /// AdditionalPrecompileSet is the type used for the additional precompiles.
+    /// Use `()` if unused.
+    type AdditionalPrecompileSet: evm::executor::stack::PrecompileSet;
     /// Module that is used for accessing accounts.
     type Accounts: modules::accounts::API;
 
