@@ -5,7 +5,7 @@ use evm::{
     executor::stack::{PrecompileFailure, PrecompileHandle, PrecompileOutput},
     ExitError, ExitRevert, ExitSucceed,
 };
-use hmac::{Hmac, Mac, NewMac as _};
+use hmac::{Hmac, Mac};
 use once_cell::sync::Lazy;
 
 use oasis_runtime_sdk::{
@@ -117,7 +117,7 @@ pub(super) fn call_x25519_derive(handle: &mut impl PrecompileHandle) -> Precompi
     let public = x25519_dalek::PublicKey::from(public);
     let private = x25519_dalek::StaticSecret::from(private);
 
-    let mut kdf = Hmac::<sha2::Sha512Trunc256>::new_from_slice(b"MRAE_Box_Deoxys-II-256-128")
+    let mut kdf = Hmac::<sha2::Sha512_256>::new_from_slice(b"MRAE_Box_Deoxys-II-256-128")
         .map_err(|_| PrecompileFailure::Error {
             exit_status: ExitError::Other("unable to create key derivation function".into()),
         })?;
@@ -377,7 +377,7 @@ mod test {
     #[test]
     fn test_x25519_derive() {
         let mut rng = OsRng {};
-        let static_secret = x25519_dalek::StaticSecret::new(&mut rng);
+        let static_secret = x25519_dalek::StaticSecret::random_from_rng(&mut rng);
         let public = x25519_dalek::PublicKey::from(&static_secret);
 
         let mut blob = [0u8; 64];
@@ -438,7 +438,7 @@ mod test {
     #[bench]
     fn bench_x25519_derive(b: &mut Bencher) {
         let mut rng = OsRng {};
-        let static_secret = x25519_dalek::StaticSecret::new(&mut rng);
+        let static_secret = x25519_dalek::StaticSecret::random_from_rng(&mut rng);
         let public = x25519_dalek::PublicKey::from(&static_secret);
 
         let mut blob = [0u8; 64];
@@ -746,7 +746,7 @@ mod test {
                 Box::new(|message: &[u8]| -> Vec<u8> {
                     use sha2::digest::Digest as _;
                     let mut digest = sha2::Sha256::default();
-                    <sha2::Sha256 as sha2::digest::Update>::update(&mut digest, message);
+                    <sha2::Sha256 as sha2::digest::Update>::update(&mut digest, &message);
                     digest.finalize().to_vec()
                 }),
             ),

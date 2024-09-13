@@ -2,7 +2,7 @@ use std::convert::TryInto;
 
 use anyhow::{anyhow, Context as _};
 use ethereum::{self, EnvelopedDecodable};
-use k256::{self, elliptic_curve::IsHigh};
+use k256::elliptic_curve::scalar::IsHigh;
 
 use oasis_runtime_sdk::{
     crypto::signature,
@@ -21,7 +21,8 @@ lazy_static! {
 }
 
 pub fn recover_low(
-    sig: &k256::ecdsa::recoverable::Signature,
+    sig: &k256::ecdsa::Signature,
+    sig_recid: k256::ecdsa::RecoveryId,
     sig_hash: &primitive_types::H256,
 ) -> Result<k256::ecdsa::VerifyingKey, anyhow::Error> {
     if sig.s().is_high().into() {
@@ -31,7 +32,7 @@ pub fn recover_low(
     // Lock the mutex to access the HashMap
     let cached = {
         let mut cache = KEY_CACHE.lock();
-        let val = cache.get(&sig.as_ref().to_vec());
+        let val = cache.get(&sig.to_vec());
         if val.is_some() {
             Some(val.unwrap().clone())
         } else {
@@ -46,13 +47,15 @@ pub fn recover_low(
     }
 
     // If not cached, recover and verify the key
-    let verifying_key = 
-    sig.recover_verify_key_from_digest_bytes(sig_hash.as_fixed_bytes().into())
-        .with_context(|| "recover verify key from digest")?;
+    let verifying_key = k256::ecdsa::VerifyingKey::recover_from_prehash(
+        sig_hash.as_fixed_bytes().as_ref(),
+        sig,
+        sig_recid,
+    ).with_context(|| "recover verify key from digest")?;
 
     // Cache the recovered key
     {
-        KEY_CACHE.lock().put(sig.as_ref().to_vec(), verifying_key.clone());
+        KEY_CACHE.lock().put(sig.to_vec(), verifying_key.clone());
     }
 
     Ok(verifying_key)
@@ -65,6 +68,7 @@ pub fn decode(
     let (
         chain_id,
         sig,
+        sig_recid,
         sig_hash,
         eth_action,
         eth_value,
@@ -76,21 +80,19 @@ pub fn decode(
             .map_err(|_| anyhow!("decoding transaction rlp"))?
     {
         ethereum::TransactionV2::Legacy(eth_tx) => {
-            let sig = k256::ecdsa::recoverable::Signature::new(
-                &k256::ecdsa::Signature::from_scalars(
-                    eth_tx.signature.r().to_fixed_bytes(),
-                    eth_tx.signature.s().to_fixed_bytes(),
-                )
-                .with_context(|| "signature from_scalars")?,
-                k256::ecdsa::recoverable::Id::new(eth_tx.signature.standard_v())
-                    .with_context(|| "recoverable id new")?,
+            let sig = k256::ecdsa::Signature::from_scalars(
+                eth_tx.signature.r().to_fixed_bytes(),
+                eth_tx.signature.s().to_fixed_bytes(),
             )
-            .with_context(|| "recoverable signature new")?;
+            .with_context(|| "signature from_scalars")?;
+            let sig_recid = k256::ecdsa::RecoveryId::from_byte(eth_tx.signature.standard_v())
+                .ok_or(anyhow!("bad recovery id"))?;
             let message = ethereum::LegacyTransactionMessage::from(eth_tx);
 
             (
                 message.chain_id,
                 sig,
+                sig_recid,
                 message.hash(),
                 message.action,
                 message.value,
@@ -101,21 +103,17 @@ pub fn decode(
             )
         }
         ethereum::TransactionV2::EIP2930(eth_tx) => {
-            let sig = k256::ecdsa::recoverable::Signature::new(
-                &k256::ecdsa::Signature::from_scalars(
-                    eth_tx.r.to_fixed_bytes(),
-                    eth_tx.s.to_fixed_bytes(),
-                )
-                .with_context(|| "signature from_scalars")?,
-                k256::ecdsa::recoverable::Id::new(eth_tx.odd_y_parity.into())
-                    .with_context(|| "recoverable id new")?,
+            let sig = k256::ecdsa::Signature::from_scalars(
+                eth_tx.r.to_fixed_bytes(),
+                eth_tx.s.to_fixed_bytes(),
             )
-            .with_context(|| "recoverable signature new")?;
+            .with_context(|| "signature from_scalars")?;
+            let sig_recid = k256::ecdsa::RecoveryId::new(eth_tx.odd_y_parity, false);
             let message = ethereum::EIP2930TransactionMessage::from(eth_tx);
-
             (
                 Some(message.chain_id),
                 sig,
+                sig_recid,
                 message.hash(),
                 message.action,
                 message.value,
@@ -126,16 +124,12 @@ pub fn decode(
             )
         }
         ethereum::TransactionV2::EIP1559(eth_tx) => {
-            let sig = k256::ecdsa::recoverable::Signature::new(
-                &k256::ecdsa::Signature::from_scalars(
-                    eth_tx.r.to_fixed_bytes(),
-                    eth_tx.s.to_fixed_bytes(),
-                )
-                .with_context(|| "signature from_scalars")?,
-                k256::ecdsa::recoverable::Id::new(eth_tx.odd_y_parity.into())
-                    .with_context(|| "recoverable id new")?,
+            let sig = k256::ecdsa::Signature::from_scalars(
+                eth_tx.r.to_fixed_bytes(),
+                eth_tx.s.to_fixed_bytes(),
             )
-            .with_context(|| "recoverable signature new")?;
+            .with_context(|| "signature from_scalars")?;
+            let sig_recid = k256::ecdsa::RecoveryId::new(eth_tx.odd_y_parity, false);
             let message = ethereum::EIP1559TransactionMessage::from(eth_tx);
 
             // Base fee is zero. Allocate only priority fee.
@@ -144,6 +138,7 @@ pub fn decode(
             (
                 Some(message.chain_id),
                 sig,
+                sig_recid,
                 message.hash(),
                 message.action,
                 message.value,
@@ -178,7 +173,7 @@ pub fn decode(
             }),
         ),
     };
-    let key = recover_low(&sig, &sig_hash)?;
+    let key = recover_low(&sig, sig_recid, &sig_hash)?;
     let nonce: u64 = eth_nonce
         .try_into()
         .map_err(|e| anyhow!("converting nonce: {}", e))?;

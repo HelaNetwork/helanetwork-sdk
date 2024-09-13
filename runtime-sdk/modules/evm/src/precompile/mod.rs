@@ -1,6 +1,7 @@
 //! EVM precompiles.
 
 use std::marker::PhantomData;
+use std::cmp::min;
 
 use evm::{
     executor::stack::{PrecompileFailure, PrecompileHandle, PrecompileOutput, PrecompileSet},
@@ -31,7 +32,15 @@ macro_rules! ensure_gas {
 fn bytes_to_words(bytes: u64) -> u64 {
     bytes.saturating_add(31) / 32
 }
+/// Copies bytes from source to target.
+fn read_input(source: &[u8], target: &mut [u8], offset: usize) {
+    if source.len() <= offset {
+        return;
+    }
 
+    let len = min(target.len(), source.len() - offset);
+    target[..len].copy_from_slice(&source[offset..offset + len]);
+}
 /// Records linear gas cost: base + word*ceil(len/32)
 fn record_linear_cost(
     handle: &mut impl PrecompileHandle,
