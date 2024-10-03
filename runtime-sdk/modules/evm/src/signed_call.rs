@@ -1,7 +1,6 @@
 use std::convert::TryFrom as _;
 
 use ethabi::Token;
-use k256::{ecdsa::recoverable, elliptic_curve::sec1::ToEncodedPoint as _};
 use once_cell::sync::OnceCell;
 use sha3::{Digest as _, Keccak256};
 
@@ -29,10 +28,12 @@ pub(crate) fn verify<C: Context, Cfg: Config>(
         // Some wallets generate a high recovery id, which isn't tolerated by the ecdsa crate.
         signature[64] -= 27
     }
-    let sig = recoverable::Signature::try_from(signature.as_slice())
+    let sig = k256::ecdsa::Signature::try_from(&signature[..64])
         .map_err(|_| Error::InvalidSignedSimulateCall("invalid signature"))?;
+    let sig_recid = k256::ecdsa::RecoveryId::from_byte(signature[64])
+        .ok_or(Error::InvalidSignedSimulateCall("invalid signature"))?;
     let signed_message = hash_call_toplevel::<Cfg>(&query, &leash);
-    let signer_pk = crate::raw_tx::recover_low(&sig, &signed_message.into())
+    let signer_pk = crate::raw_tx::recover_low(&sig, sig_recid, &signed_message.into())
         .map_err(|_| Error::InvalidSignedSimulateCall("signature recovery failed"))?;
     let signer_addr_digest = Keccak256::digest(&signer_pk.to_encoded_point(false).as_bytes()[1..]);
     if &signer_addr_digest[12..] != query.caller.as_ref() {
@@ -90,7 +91,7 @@ fn hash_call_toplevel<Cfg: Config>(query: &SimulateCallQuery, leash: &Leash) -> 
     encoded_call[0..2].copy_from_slice(b"\x19\x01");
     encoded_call[2..34].copy_from_slice(domain_separator);
     encoded_call[34..].copy_from_slice(&call_struct_hash);
-    Keccak256::digest(&encoded_call).into()
+    Keccak256::digest(encoded_call).into()
 }
 
 fn hash_call(query: &SimulateCallQuery, leash: &Leash) -> [u8; 32] {
@@ -147,7 +148,7 @@ fn encode_bytes(s: impl AsRef<[u8]>) -> Token {
 }
 
 fn hash_encoded(tokens: &[Token]) -> [u8; 32] {
-    Keccak256::digest(&ethabi::encode(tokens)).into()
+    Keccak256::digest(ethabi::encode(tokens)).into()
 }
 
 #[cfg(test)]

@@ -538,7 +538,7 @@ impl<R: Runtime> Dispatcher<R> {
             store,
             &modules::core::MODULE_NAME,
         ));
-        store.insert(&modules::core::state::MESSAGE_HANDLERS, message_handlers);
+        store.insert(modules::core::state::MESSAGE_HANDLERS, message_handlers);
     }
 
     /// Process the given runtime query.
@@ -567,7 +567,7 @@ impl<R: Runtime> Dispatcher<R> {
                 .ok_or_else(|| modules::core::Error::InvalidMethod(method.into()))?
 
         }))
-        .map_err(|err| -> RuntimeError { Error::QueryAborted(format!("{:?}", err)).into() })?
+        .map_err(|err| -> RuntimeError { Error::QueryAborted(format!("{err:?}")).into() })?
         .map(cbor::to_vec)
     }
 
