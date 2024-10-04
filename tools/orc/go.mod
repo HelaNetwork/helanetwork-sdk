@@ -2,7 +2,7 @@ module github.com/oasisprotocol/oasis-sdk/tools/orc
 
 go 1.18
 
-replace	github.com/oasisprotocol/oasis-core/go => ../../../oasis-core/go
+replace	github.com/oasisprotocol/oasis-core/go => ../../../helanetwork-core/go
 
 require (
 	github.com/BurntSushi/toml v1.2.0

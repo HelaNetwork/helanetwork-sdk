@@ -94,6 +94,9 @@ const MODULE_NAME: &str = "evm";
 
 /// Module configuration.
 pub trait Config: 'static {
+    /// AdditionalPrecompileSet is the type used for the additional precompiles.
+    /// Use `()` if unused.
+    type AdditionalPrecompileSet: evm::executor::stack::PrecompileSet;
     /// Module that is used for accessing accounts.
     type Accounts: modules::accounts::API;
 
@@ -121,7 +124,7 @@ pub trait Config: 'static {
     /// If any of the precompile addresses returned is the same as for one of
     /// the builtin precompiles, then the returned implementation will
     /// overwrite the builtin implementation.
-    fn additional_precompiles() -> Option<&'static dyn evm::executor::stack::PrecompileSet> {
+    fn additional_precompiles() -> Option<Self::AdditionalPrecompileSet> {
         None
     }
 
@@ -216,7 +219,7 @@ impl From<evm::ExitError> for Error {
             CallTooDeep => "call too deep",
             CreateCollision => "create collision",
             CreateContractLimit => "create contract limit",
-            InvalidCode => "invalid code",
+            InvalidCode(..) => "invalid code",
 
             OutOfOffset => "out of offset",
             OutOfGas => "out of gas",
@@ -670,7 +673,7 @@ impl<Cfg: Config> API for Module<Cfg> {
 
     fn get_storage<C: Context>(ctx: &mut C, address: H160, index: H256) -> Result<Vec<u8>, Error> {
         let s = state::public_storage(ctx, &address);
-        let result: H256 = s.get(&index).unwrap_or_default();
+        let result: H256 = s.get(index).unwrap_or_default();
         Ok(result.as_bytes().to_vec())
     }
 
@@ -678,7 +681,7 @@ impl<Cfg: Config> API for Module<Cfg> {
         let store = storage::PrefixStore::new(ctx.runtime_state(), &crate::MODULE_NAME);
         let codes = storage::TypedStore::new(storage::PrefixStore::new(store, &state::CODES));
 
-        Ok(codes.get(&address).unwrap_or_default())
+        Ok(codes.get(address).unwrap_or_default())
     }
 
     fn get_balance<C: Context>(ctx: &mut C, address: H160) -> Result<u128, Error> {
@@ -1244,11 +1247,11 @@ impl<Cfg: Config> module::BlockHandler for Module<Cfg> {
         let mut block_hashes = state::block_hashes(ctx.runtime_state());
 
         let current_number = block_number;
-        block_hashes.insert(&block_number.to_be_bytes(), block_hash);
+        block_hashes.insert(block_number.to_be_bytes(), block_hash);
 
         if current_number > state::BLOCK_HASH_WINDOW_SIZE {
             let start_number = current_number - state::BLOCK_HASH_WINDOW_SIZE;
-            block_hashes.remove(&start_number.to_be_bytes());
+            block_hashes.remove(start_number.to_be_bytes());
         }
     }
 }
